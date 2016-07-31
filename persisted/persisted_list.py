@@ -6,10 +6,14 @@ class List():
     Any call which updates the state of the map will result in an update to the
     backing file with which the map was initialized.
 
+    TODO: check items for JSON-encodability before mutations.
+
     """
 
     # Keys for the operations map.
     _append = "append"
+    _set = "set"
+    _delete = "delete"
     _remove = "remove"
     _push = "push"
     _pop = "pop"
@@ -29,6 +33,10 @@ class List():
         self._inner_list = []
         self._log.replay(self._get_op_map())
 
+    def __len__(self):
+        """ Returns the number of elements in the list. """
+        return len(self._inner_list)
+
     def append(self, new_element):
         """ Appends the input element to the end of the list.
 
@@ -43,7 +51,7 @@ class List():
         self._inner_list.append(new_element)
         self._log.save_operation(_append, new_element)
 
-    def get(self, index):
+    def __getitem__(self, index):
         """ Returns the element at the input index in the list.
 
         Returns:
@@ -55,6 +63,35 @@ class List():
 
         """
         return self._inner_list[index]
+
+    def __setitem__(self, index, element):
+        """ Sets the element at the provided index.
+
+        Args:
+            index (int)
+                The position of the element to set.
+            element (object)
+                The element to put at the provided index.
+        Raises:
+            IndexError
+                If the index is not in the range [0, len(list)).
+            TODO: something if not JSON encodable
+        """
+        self._inner_list[index] = element
+        self._log.save_operation(_set, index, element)
+
+    def __delitem__(self, index):
+        """ Deletes the element at the provided index.
+
+        Args:
+            index (int)
+                The position in the list of the element to delete.
+        Raises:
+            IndexError
+                If the index is not valid for the list.
+        """
+        del self._inner_list[index]
+        self._log.save_operation(_delete, index)
 
     def index(self, value):
         """ Returns the index of the first occurrence of the input value.
@@ -114,29 +151,28 @@ class List():
         self._log.save_operation(_pop)
         return value
 
-    def size(self):
-        """ Used to query the size of the list.
+    def __iter__(self):
+        pass
 
-        Returns:
-            size (int)
-                The number of elements in the list.
+    def __reversed__(self):
+        pass
 
-        """
-        # TODO: can we be 'lengthable'? iterable?
-        return len(self._inner_list)
+    def __contains__(self, element):
+        pass
+
+    # TODO: addition operator:
+    # https://docs.python.org/3/reference/datamodel.html?emulating-container-types#emulating-container-types
 
     def _get_compaction_callback(self):
         def callback():
-            # TODO: could probably be list comprehension
-            ops = []
-            for element in self._inner_list:
-                ops.append(_append, [element])
-            return ops
+            return [(_append, element) for element in self._inner_list]
         return callback
 
     def _get_op_map(self):
         return {
             _append : self.append,
+            _set : self.__setitem__,
+            _delete : self.__delitem__,
             _remove : self.remove,
             _push : self.push,
             _pop : self.pop

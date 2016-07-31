@@ -6,10 +6,12 @@ class Map():
     Any call which updates the state of the map will result in an update to the
     backing file with which the map was initialized.
 
+    TODO: check items for JSON-encodability before mutations.
+
     """
 
     # Keys for the operations map.
-    _put = "put"
+    _set = "set"
     _delete = "delete"
 
     def __init__(self, path_to_backing_file):
@@ -27,7 +29,11 @@ class Map():
         self._inner_map = {}
         self._log.replay(self._get_op_map())
 
-    def put(self, key, value):
+    def __len__(self):
+        """ Returns the number of key-value pairs in the map. """
+        return len(self._inner_map)
+
+    def __setitem__(self, key, value):
         """ Puts the key / value pair into the map.
 
         Args:
@@ -44,7 +50,7 @@ class Map():
         self._inner_map[key] = value
         self._log.save_operation(_put, key, value)
 
-    def get(self, key):
+    def __getitem__(self, key):
         """ Used to query the value mapped to the input key.
 
         Args:
@@ -60,7 +66,7 @@ class Map():
         """
         return self._inner_map[key]
 
-    def delete(self, key):
+    def __delitem__(self, key):
         """ Used to delete the mapping for the input key.
 
         Args:
@@ -74,31 +80,37 @@ class Map():
                 If the key was not found in the map.
 
         """
-        # TODO: check for KeyError
         val = self._inner_map[key]
-        # TODO: delete mapping
+        del self._inner_map[key]
         self._log.save_operation(_delete, key)
         return val
 
-    def size(self):
-        """ Used to query the size of the map.
+    def __contains__(self, key):
+        """ Returns true iff the key is present in the map. """
+        return key in self._inner_map
 
-        Returns:
-            size (int)
-                The number of key / value pairs in this map.
+    def __iter__(self):
+        """ Returns an iterator over the keys in the map. """
+        return self._inner_map.__iter__()
 
-        """
-        # TODO: can we be 'lengthable'? iterable?
-        return len(self._inner_map)
+    def iteritems(self):
+        """ Returns an iterator over the (key, value) pairs in the map. """
+        return self._inner_map.iteritems()
+
+    def iterkeys(self):
+        """ Returns an iterator over the keys in the map. """
+        return self._inner_map.iterkeys()
+
+    def itervalues(self):
+        """ Returns an iterator over the values in the map. """
+        return self._inner_map.itervalues()
 
     def _get_compaction_callback(self):
+        def make_kv_tuple(key):
+            return (_put, [key, self._inner_map[key]])
         def callback():
-            # TODO: could probably be list comprehension
-            ops = []
-            for key in self._inner_map:
-                ops.append(_put, [key, self._inner_map[key]])
-            return ops
+            return [make_kv_tuple(key) for key in self._inner_map])]
         return callback
 
     def _get_op_map(self):
-        return {_put : self.put, _delete : self.delete}
+        return {_self : self.__setitem__, _delete : self.__delitem__}
