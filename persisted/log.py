@@ -1,13 +1,14 @@
 import json
+import os
 from tempfile import TemporaryFile
+
+_key = "key"
+_parameters = "parameters"
+# Initialize the compaction threshold to 1 MB for new logs.
+_initial_compaction_threshold = 1024 * 1024
 
 class Log():
     """ A log to back data structures in the 'persisted' library. """
-
-    _key = "key"
-    _parameters = "parameters"
-    # Initialize the compaction threshold to 1 MB for new logs.
-    _initial_compation_threshold = 1024 * 1024
 
     def __init__(self, filepath, compaction_callback):
         """ Initializes a log backed by a file at the given filepath.
@@ -26,11 +27,15 @@ class Log():
                 method. This function should be callable multiple times.
 
         """
-
-        # TODO: check file?
         self._backing_file = filepath
+        # We do this to create the file if it does not exist.
+        try:
+            log_file = open(self._backing_file, 'a+')
+            log_file.close()
+        except IOError as e:
+            raise IOError("Error initializing log file", e)
         self._compaction_callback = compaction_callback
-        self._compaction_threshold = _initial_compation_threshold
+        self._compaction_threshold = _initial_compaction_threshold
         # Compact during initialization so we can avoid it later.
         self._compact()
 
@@ -47,7 +52,6 @@ class Log():
                 the json.dumps method.
 
         """
-
         op_as_json = json.dumps({_key : op_name, _parameters : parameters})
         log_file = open(self._backing_file, 'a')
         log_file.write(op_as_json + '\n')
@@ -64,7 +68,6 @@ class Log():
                 map which will then be called with the saved parameters.
 
         """
-
         log_file = open(self._backing_file, 'r')
         op_strings = log_file.readlines()
         log_file.close()
@@ -73,24 +76,29 @@ class Log():
             # Retrieve the operation function from the input map and call it
             # with the saved parameters.
             op = op_map[op_dict[_key]]
-            op(op_dict[_parameters])
+            op(*op_dict[_parameters])
 
     def _compact(self):
         new_log = TemporaryFile()
+        print "writing to temporary file"
         for op_name, params in self._compaction_callback():
             op_as_json = json.dumps({_key : op_name, _parameters : params})
+            print op_as_json
             new_log.write(op_as_json + '\n')
-        # TODO: use OS to copy temp file over log file
+        # If all went well, we overwrite the old log file with the new one.
+        new_log.seek(0)
+        log_file = open(self._backing_file, 'w')
+        log_file.writelines(new_log.readlines())
         new_log.close()
+        log_file.close()
 
     # TODO: use this to wrap save_operation and replay methods.
     def _compact_if_necessary(self):
-        # TODO: replace placeholder with real size of backing file
-        size = 10
+        size = os.stat(self._backing_file).st_size
         if size < self._compaction_threshold:
             return
         self._compact()
-        # TODO: update size
+        size = os.stat(self._backing_file).st_size
         if size > self._compaction_threshold:
             # If we are still over the threshold, we need to increase it to
             # avoid thrashing.

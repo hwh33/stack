@@ -1,5 +1,9 @@
 from log import Log
 
+# Keys for the operations map.
+_set = "set"
+_delete = "delete"
+
 class Map():
     """ A persisted map.
 
@@ -9,10 +13,6 @@ class Map():
     TODO: check items for JSON-encodability before mutations.
 
     """
-
-    # Keys for the operations map.
-    _set = "set"
-    _delete = "delete"
 
     def __init__(self, path_to_backing_file):
         """ Initializes the map using the provided file.
@@ -25,9 +25,13 @@ class Map():
                 state of this map.
 
         """
-        self._log = Log(path_to_backing_file, _get_compaction_callback())
         self._inner_map = {}
+        self._log = Log(path_to_backing_file, self._get_compaction_callback())
+        # We make sure persistence is turned off during the replay so that we
+        # don't duplicate everything in the log file.
+        self._persist = False
         self._log.replay(self._get_op_map())
+        self._persist = True
 
     def __len__(self):
         """ Returns the number of key-value pairs in the map. """
@@ -48,7 +52,7 @@ class Map():
 
         """
         self._inner_map[key] = value
-        self._log.save_operation(_put, key, value)
+        if self._persist: self._log.save_operation(_set, key, value)
 
     def __getitem__(self, key):
         """ Used to query the value mapped to the input key.
@@ -82,7 +86,7 @@ class Map():
         """
         val = self._inner_map[key]
         del self._inner_map[key]
-        self._log.save_operation(_delete, key)
+        if self._persist: self._log.save_operation(_delete, key)
         return val
 
     def __contains__(self, key):
@@ -107,10 +111,11 @@ class Map():
 
     def _get_compaction_callback(self):
         def make_kv_tuple(key):
-            return (_put, [key, self._inner_map[key]])
+            return (_set, [key, self._inner_map[key]])
         def callback():
-            return [make_kv_tuple(key) for key in self._inner_map])]
+            print "called"
+            return [make_kv_tuple(key) for key in self._inner_map]
         return callback
 
     def _get_op_map(self):
-        return {_self : self.__setitem__, _delete : self.__delitem__}
+        return {_set : self.__setitem__, _delete : self.__delitem__}
