@@ -30,6 +30,8 @@ class Map():
         self._persist = False
         self._log.replay(self._get_op_map())
         self._persist = True
+        # Compact during initialization as we'd rather take the time now.
+        self._log.compact()
 
     def __len__(self):
         """ Returns the number of key-value pairs in the map. """

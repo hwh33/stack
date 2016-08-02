@@ -98,7 +98,15 @@ class Log():
             op = op_map[op_dict[_key]]
             op(*op_dict[_parameters])
 
-    def _compact(self):
+    def compact(self):
+        """ Uses the compaction callback to reduce the log.
+
+        After this method returns, the log will consist of only the operations
+        returned by the compaction callback. Compaction is run automatically
+        when thresholds are met, so users of the log do not usually need to
+        worry about calling this method.
+
+        """
         new_log = TemporaryFile()
         for op_name, params in self._compaction_callback():
             op_as_json = json.dumps({_key : op_name, _parameters : params})
@@ -114,7 +122,7 @@ class Log():
         size = os.stat(self._backing_file).st_size
         if size < self._compaction_threshold:
             return
-        self._compact()
+        self.compact()
         size = os.stat(self._backing_file).st_size
         if size > self._compaction_threshold:
             # If we are still over the threshold, we need to increase it to

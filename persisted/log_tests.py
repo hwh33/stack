@@ -126,7 +126,7 @@ def test_compact():
     # After compaction, the log should be condensed to one instance of the saved
     # operation.
     original_size = os.stat(log._backing_file).st_size
-    log._compact()
+    log.compact()
     compacted_size = os.stat(log._backing_file).st_size
     assert compacted_size < original_size
     assert compacted_size > 0
