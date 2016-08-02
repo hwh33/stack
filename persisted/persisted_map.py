@@ -10,8 +10,6 @@ class Map():
     Any call which updates the state of the map will result in an update to the
     backing file with which the map was initialized.
 
-    TODO: check items for JSON-encodability before mutations.
-
     """
 
     def __init__(self, path_to_backing_file):

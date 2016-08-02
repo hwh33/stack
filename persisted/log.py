@@ -57,8 +57,6 @@ class Log():
                 raise ValueError("Malformed input file", e)
         self._compaction_callback = compaction_callback
         self._compaction_threshold = _initial_compaction_threshold
-        # Compact during initialization so we can avoid it later.
-        self._compact()
 
     def save_operation(self, op_name, *parameters):
         """ Saves an operation in the log.
