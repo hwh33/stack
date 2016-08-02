@@ -7,6 +7,20 @@ _parameters = "parameters"
 # Initialize the compaction threshold to 1 MB for new logs.
 _initial_compaction_threshold = 1024 * 1024
 
+def test_json_encoding(*objs):
+    """ A helper function for users of this library.
+
+    Raises an error if the input object is not JSON-encodable.
+
+    Args:
+        objs (*object)
+            The objects to test for JSON-encodability.
+    Raises:
+        TypeError:
+            If any of the input objects is not encodable as JSON.
+    """
+    for obj in objs: json.dumps(obj)
+
 class Log():
     """ A log to back data structures in the 'persisted' library. """
 
@@ -34,6 +48,13 @@ class Log():
             log_file.close()
         except IOError as e:
             raise IOError("Error initializing log file", e)
+        # Check that every line is decodable (we want to fail fast otherwise).
+        log_file = open(self._backing_file)
+        for line in log_file.readlines():
+            try:
+                json.loads(line)
+            except Exception as e:
+                raise ValueError("Malformed input file", e)
         self._compaction_callback = compaction_callback
         self._compaction_threshold = _initial_compaction_threshold
         # Compact during initialization so we can avoid it later.
@@ -56,6 +77,7 @@ class Log():
         log_file = open(self._backing_file, 'a')
         log_file.write(op_as_json + '\n')
         log_file.close()
+        self._compact_if_necessary()
 
     def replay(self, op_map):
         """ Replays the log to update the persisted data structure.
@@ -80,10 +102,8 @@ class Log():
 
     def _compact(self):
         new_log = TemporaryFile()
-        print "writing to temporary file"
         for op_name, params in self._compaction_callback():
             op_as_json = json.dumps({_key : op_name, _parameters : params})
-            print op_as_json
             new_log.write(op_as_json + '\n')
         # If all went well, we overwrite the old log file with the new one.
         new_log.seek(0)
@@ -92,7 +112,6 @@ class Log():
         new_log.close()
         log_file.close()
 
-    # TODO: use this to wrap save_operation and replay methods.
     def _compact_if_necessary(self):
         size = os.stat(self._backing_file).st_size
         if size < self._compaction_threshold:

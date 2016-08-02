@@ -1,4 +1,4 @@
-from log import Log
+from log import Log, test_json_encoding
 
 # Keys for the operations map.
 _set = "set"
@@ -51,6 +51,7 @@ class Map():
             TODO: something if not JSON encodable
 
         """
+        test_json_encoding(key, value)
         self._inner_map[key] = value
         if self._persist: self._log.save_operation(_set, key, value)
 
@@ -84,6 +85,7 @@ class Map():
                 If the key was not found in the map.
 
         """
+        test_json_encoding(key)
         val = self._inner_map[key]
         del self._inner_map[key]
         if self._persist: self._log.save_operation(_delete, key)
@@ -113,7 +115,6 @@ class Map():
         def make_kv_tuple(key):
             return (_set, [key, self._inner_map[key]])
         def callback():
-            print "called"
             return [make_kv_tuple(key) for key in self._inner_map]
         return callback
 
