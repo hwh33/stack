@@ -48,7 +48,8 @@ class Map():
                 The value stored by the key. Must be encodable by the json.dumps
                 method.
         Raises:
-            TODO: something if not JSON encodable
+            ValueError
+                If either the key or value are not JSON encodable.
 
         """
         test_json_encoding(key, value)
@@ -83,6 +84,8 @@ class Map():
         Raises:
             KeyError
                 If the key was not found in the map.
+            ValueError
+                If the key is not JSON encodable.
 
         """
         test_json_encoding(key)

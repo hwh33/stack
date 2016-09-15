@@ -62,23 +62,25 @@ def test_init_new():
     backing_file = tempfile.NamedTemporaryFile()
     return Log(backing_file.name, dummy_compaction_callback)
 
-def test_init_existing(existing_log):
-    """ Tests initialization of a log from a previous log's backing file. """
+def test_init_existing():
+    """ Tests initialization of a log from a previous log's backing file.
+
+    We return the log for use in other tests.
+
+    """
     # First save some operations so that we have something to load.
+    existing_log = test_init_new()
     for _ in range(10):
         operation = DummyOperation()
         existing_log.save_operation(operation.name, *operation.parameters)
     # Note that this will wipe the log (because the compaction callback returns
     # an empty list).
-    Log(existing_log._backing_file, dummy_compaction_callback)
+    return Log(existing_log._backing_file, dummy_compaction_callback)
 
-def test_init_corrupted(existing_log):
+def test_init_corrupted():
     """ Tests initialization of a log from a badly formatted file. """
     # Copy the log file then corrupt it by adding a bad line.
-    # Save some data to the log.
-    for _ in range(10):
-        operation = DummyOperation()
-        existing_log.save_operation(operation.name, *operation.parameters)
+    existing_log = test_init_existing()
     # Sanity check (we're putting the bad data between the 1st and 2nd line).
     assert len(open(existing_log._backing_file).readlines()) > 1
     copied_backing_file = tempfile.NamedTemporaryFile()
@@ -92,7 +94,7 @@ def test_init_corrupted(existing_log):
     try:
         Log(copied_backing_file.name, dummy_compaction_callback)
     except ValueError:
-        # this is what we expected - success
+        # This is what we expected - success.
         return
     raise Exception("Init call on corrupted file should have failed")
 
@@ -159,9 +161,9 @@ def test_compact_if_necessary():
         assert current_size > 0
 
 
-new_log = test_init_new()
-test_init_existing(new_log)
-test_init_corrupted(new_log)
+test_init_new()
+test_init_existing()
+test_init_corrupted()
 test_save_and_replay()
 test_compact()
 test_compact_if_necessary()

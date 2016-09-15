@@ -31,9 +31,9 @@ class Log():
             filepath (string)
                 The path to the file which backs this log. If no file exists at
                 that path, one will be created.
-            compaction_callback (function)
+            compaction_callback (function: () -> (string, object list) list)
                 A function which returns a list of operations representing the
-                current state of the data structure represented by this log. The
+                current state of the data structure backed by this log. The
                 operations should be 2-tuples. The first element should be a
                 string defining the operation's name and the second should be a
                 list of parameters for the operation (can be empty). These
