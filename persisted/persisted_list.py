@@ -1,5 +1,13 @@
 from log import Log
 
+# Keys for the operations map.
+_append = "append"
+_set = "set"
+_delete = "delete"
+_remove = "remove"
+_push = "push"
+_pop = "pop"
+
 class List():
     """ A persisted list.
 
@@ -9,14 +17,6 @@ class List():
     TODO: check items for JSON-encodability before mutations.
 
     """
-
-    # Keys for the operations map.
-    _append = "append"
-    _set = "set"
-    _delete = "delete"
-    _remove = "remove"
-    _push = "push"
-    _pop = "pop"
 
     def __init__(self, path_to_backing_file):
         """ Initializes the map using the provided file.
@@ -29,7 +29,7 @@ class List():
                 state of this map.
 
         """
-        self._log = Log(path_to_backing_file, _get_compaction_callback())
+        self._log = Log(path_to_backing_file, self._get_compaction_callback())
         self._inner_list = []
         self._log.replay(self._get_op_map())
 

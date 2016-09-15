@@ -26,10 +26,10 @@ def test_init_existing():
     existing_map["to be deleted"] = 5
     del existing_map["to be deleted"]
     newly_loaded_map = Map(existing_map._log._backing_file)
+    assert len(newly_loaded_map) == len(existing_map)
     for key, value in existing_map.iteritems():
         assert key in newly_loaded_map
         assert newly_loaded_map[key] == value
-    assert len(newly_loaded_map) == len(existing_map)
     return newly_loaded_map
 
 def test_init_corrupted():
