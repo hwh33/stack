@@ -152,13 +152,16 @@ class List():
         return value
 
     def __iter__(self):
-        pass
+        """ Returns an iterator over the elements in the list. """
+        return self._inner_list.__iter__()
 
     def __reversed__(self):
-        pass
+        """ Returns an in-memory copy of this list in reverse order. """
+        return self._inner_list.__reversed__()
 
     def __contains__(self, element):
-        pass
+        """ Returns true iff the input element is in the list. """
+        return element in self._inner_list
 
     # TODO: addition operator:
     # https://docs.python.org/3/reference/datamodel.html?emulating-container-types#emulating-container-types
