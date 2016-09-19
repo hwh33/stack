@@ -52,3 +52,38 @@ class TestMap(unittest.TestCase):
             # This is what we expected - success.
             return
         raise Exception("Init call on corrupted file should have failed")
+
+    def test_len(self):
+        " Tests the __len__ method"
+
+    def test_append(self):
+        " Tests the append method. "
+        pass
+
+    def test_getitem(self):
+        " Tests the __getitem__ method. "
+        pass
+
+    def test_delitem(self):
+        " Tests the delitem method. "
+        pass
+
+    def test_contains(self):
+        " Tests the __contains__ method. "
+        pass
+
+    def test_iter(self):
+        "Tests the __iter__ method. "
+        pass
+
+    def test_iteritems(self):
+        "Tests the iteritems method. "
+        pass
+
+    def test_iterkeys(self):
+        "Tests the iteritems method. "
+        pass
+
+    def test_itervalues(self):
+        "Tests the iteritems method. "
+        pass

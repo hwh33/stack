@@ -49,22 +49,49 @@ class TestList(unittest.TestCase):
             return
         raise Exception("Init call on corrupted file should have failed")
 
-    def test_append_and_get(self):
-        " Tests that elements can be appended and retrieved with get. "
+    def test_len(self):
+        " Tests the __len__ method"
+
+    def test_append(self):
+        " Tests the append method. "
         pass
 
-    def test_push_and_pop(self):
-        " Tests that elements can be pushed and then popped. "
+    def test_getitem(self):
+        " Tests the __getitem__ method. "
+        pass
+
+    def test_setitem(self):
+        " Tests the __setitem__ method. "
+        pass
+
+    def test_delitem(self):
+        " Tests the delitem method. "
         pass
 
     def test_index(self):
-        " Tests that the index method returns correct values. "
+        " Tests the index method. "
         pass
 
     def test_remove(self):
-        " Tests that the remove method truly removes an element from a list. "
+        " Tests the remove method. "
         pass
 
-    def test_size(self):
-        " Tests that the size method returns correct values. "
+    def test_push(self):
+        " Tests the push method. "
+        pass
+
+    def test_pop(self):
+        " Tests the pop method. "
+        pass
+
+    def test_iter(self):
+        "Tests the __iter__ method. "
+        pass
+
+    def test_reversed(self):
+        " Tests the __reversed__ method. "
+        pass
+
+    def test_contains(self):
+        " Tests the __contains__ method. "
         pass
