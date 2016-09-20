@@ -55,35 +55,110 @@ class TestMap(unittest.TestCase):
 
     def test_len(self):
         " Tests the __len__ method"
+        test_map = Map(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_map[i] = i
+        assert len(test_map) == number_elements
 
-    def test_append(self):
-        " Tests the append method. "
-        pass
+    def test_setitem(self):
+        " Tests the __setitem__ method. "
+        test_map = Map(tempfile.NamedTemporaryFile().name)
+        test_map["testKey1"] = "testValue1"
+        test_map.__setitem__("testKey2", "testValue2")
+        assert test_map["testKey1"] == "testValue1"
+        assert test_map["testKey2"] == "testValue2"
 
     def test_getitem(self):
         " Tests the __getitem__ method. "
-        pass
+        test_map = Map(tempfile.NamedTemporaryFile().name)
+        test_map["testKey1"] = "testValue1"
+        assert test_map["testKey1"] == "testValue1"
+        assert test_map.__getitem__("testKey1") == "testValue1"
 
     def test_delitem(self):
-        " Tests the delitem method. "
-        pass
+        " Tests the __delitem__ method. "
+        test_map = Map(tempfile.NamedTemporaryFile().name)
+        test_map["testKey1"] = "testValue1"
+        assert test_map["testKey1"] == "testValue1"
+        del test_map["testKey1"]
+        assert len(test_map) == 0
+        try:
+            test_map["testKey1"]
+            self.fail("key should not exist after deletion")
+        except KeyError:
+            # This is what we want to happen.
+            return
 
     def test_contains(self):
         " Tests the __contains__ method. "
-        pass
+        test_map = Map(tempfile.NamedTemporaryFile().name)
+        test_map["testKey1"] = "testValue1"
+        assert "testKey1" in test_map
+        assert test_map.__contains__("testKey1")
+        assert not "someOtherKey" in test_map
+        assert not test_map.__contains__("someOtherKey")
 
     def test_iter(self):
         "Tests the __iter__ method. "
-        pass
+        test_map = Map(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_map[i] = i * 10
+        iterator = test_map.__iter__()
+        for i in range(number_elements):
+            assert iterator.next() == i
+        try:
+            iterator.next()
+            self.fail("iterator should have been exhausted")
+        except StopIteration:
+            # This is what we expect to happen
+            return
 
     def test_iteritems(self):
         "Tests the iteritems method. "
-        pass
+        test_map = Map(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_map[i] = i * 10
+        iterator = test_map.iteritems()
+        for i in range(number_elements):
+            assert iterator.next() == (i, i * 10)
+        try:
+            iterator.next()
+            self.fail("iterator should have been exhausted")
+        except StopIteration:
+            # This is what we expect to happen
+            return
 
     def test_iterkeys(self):
         "Tests the iteritems method. "
-        pass
+        test_map = Map(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_map[i] = i * 10
+        iterator = test_map.iterkeys()
+        for i in range(number_elements):
+            assert iterator.next() == i
+        try:
+            iterator.next()
+            self.fail("iterator should have been exhausted")
+        except StopIteration:
+            # This is what we expect to happen
+            return
 
     def test_itervalues(self):
         "Tests the iteritems method. "
-        pass
+        test_map = Map(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_map[i] = i * 10
+        iterator = test_map.itervalues()
+        for i in range(number_elements):
+            assert iterator.next() == i * 10
+        try:
+            iterator.next()
+            self.fail("iterator should have been exhausted")
+        except StopIteration:
+            # This is what we expect to happen
+            return
