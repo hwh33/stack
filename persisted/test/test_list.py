@@ -51,47 +51,125 @@ class TestList(unittest.TestCase):
 
     def test_len(self):
         " Tests the __len__ method"
+        test_list = List(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        assert len(test_list) == 0
+        for i in range(number_elements):
+            test_list.append(i)
+        assert len(test_list) == number_elements
 
     def test_append(self):
         " Tests the append method. "
-        pass
+        test_list = List(tempfile.NamedTemporaryFile().name)
+        test_list.append("item0")
+        test_list.append("item1")
+        assert test_list[0] == "item0"
+        assert test_list[1] == "item1"
 
     def test_getitem(self):
         " Tests the __getitem__ method. "
-        pass
+        test_list = List(tempfile.NamedTemporaryFile().name)
+        test_list.append("item0")
+        assert test_list[0] == "item0"
+        assert test_list.__getitem__(0) == "item0"
 
     def test_setitem(self):
         " Tests the __setitem__ method. "
-        pass
+        test_list = List(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_list.append(i)
+        test_list[3] = "three"
+        test_list.__setitem__(4, "four")
+        assert test_list[3] == "three"
+        assert test_list[4] == "four"
 
     def test_delitem(self):
         " Tests the delitem method. "
-        pass
+        test_list = List(tempfile.NamedTemporaryFile().name)
+        test_list.append("zero")
+        test_list.append("one")
+        test_list.append("two")
+        del test_list[0]
+        test_list.__delitem__(0)
+        assert len(test_list) == 1
+        assert test_list[0] == "two"
 
     def test_index(self):
         " Tests the index method. "
-        pass
+        test_list = List(tempfile.NamedTemporaryFile().name)
+        test_list.append("zero")
+        test_list.append("one")
+        test_list.append("two")
+        test_list.append("two")
+        assert test_list.index("zero") == 0
+        assert test_list.index("two") == 2
 
     def test_remove(self):
         " Tests the remove method. "
-        pass
+        test_list = List(tempfile.NamedTemporaryFile().name)
+        test_list.append("zero")
+        test_list.append("one")
+        test_list.append("two")
+        test_list.append("two")
+        test_list.remove("zero")
+        test_list.remove("two")
+        assert len(test_list) == 2
+        assert test_list[0] == "one"
+        assert test_list[1] == "two"
 
     def test_push(self):
         " Tests the push method. "
-        pass
+        test_list = List(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_list.push(i)
+        for i in range(number_elements):
+            assert test_list[i] == number_elements - 1 - i
 
     def test_pop(self):
         " Tests the pop method. "
-        pass
+        test_list = List(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_list.append(i)
+        pops = 0
+        while len(test_list) > 0:
+            pops += 1
+            assert test_list.pop() == number_elements - pops
 
     def test_iter(self):
         "Tests the __iter__ method. "
-        pass
+        test_list = List(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_list.append(i)
+        iterator = test_list.__iter__()
+        for i in range(number_elements):
+            assert iterator.next() == i
+        try:
+            iterator.next()
+            self.fail("iterator should have been exhausted")
+        except StopIteration:
+            # This is what we expect to happen
+            return
 
     def test_reversed(self):
         " Tests the __reversed__ method. "
-        pass
+        test_list = List(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_list.append(i)
+        current = 9
+        for element in reversed(test_list):
+            assert element == current
+            current -= 1
 
     def test_contains(self):
         " Tests the __contains__ method. "
-        pass
+        test_list = List(tempfile.NamedTemporaryFile().name)
+        test_list.append(1)
+        assert 1 in test_list
+        assert test_list.__contains__(1)
+        assert not "someOtherElement" in test_list
+        assert not test_list.__contains__("someOtherElement")
