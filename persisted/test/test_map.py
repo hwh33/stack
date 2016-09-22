@@ -57,6 +57,7 @@ class TestMap(unittest.TestCase):
         " Tests the __len__ method"
         test_map = Map(tempfile.NamedTemporaryFile().name)
         number_elements = 10
+        assert len(test_map) == 0
         for i in range(number_elements):
             test_map[i] = i
         assert len(test_map) == number_elements

@@ -31,7 +31,11 @@ class List():
         """
         self._log = Log(path_to_backing_file, self._get_compaction_callback())
         self._inner_list = []
+        # We make sure persistence is turned off during the replay so that we
+        # don't duplicate everything in the log file.
+        self.persist = False
         self._log.replay(self._get_op_map())
+        self.persist = True
 
     def __len__(self):
         """ Returns the number of elements in the list. """
@@ -49,7 +53,7 @@ class List():
 
         """
         self._inner_list.append(new_element)
-        self._log.save_operation(_append, new_element)
+        if self.persist: self._log.save_operation(_append, new_element)
 
     def __getitem__(self, index):
         """ Returns the element at the input index in the list.
@@ -78,7 +82,7 @@ class List():
             TODO: something if not JSON encodable
         """
         self._inner_list[index] = element
-        self._log.save_operation(_set, index, element)
+        if self.persist: self._log.save_operation(_set, index, element)
 
     def __delitem__(self, index):
         """ Deletes the element at the provided index.
@@ -91,7 +95,7 @@ class List():
                 If the index is not valid for the list.
         """
         del self._inner_list[index]
-        self._log.save_operation(_delete, index)
+        if self.persist: self._log.save_operation(_delete, index)
 
     def index(self, value):
         """ Returns the index of the first occurrence of the input value.
@@ -120,7 +124,7 @@ class List():
 
         """
         self._inner_list.remove(value)
-        self._log.save_operation(_remove, value)
+        if self.persist: self._log.save_operation(_remove, value)
 
     def push(self, new_element):
         """ Pushes the input element into the first position in the list.
@@ -134,7 +138,7 @@ class List():
 
         """
         self._inner_list = [new_element] + self._inner_list
-        self._log.save_operation(_push, new_element)
+        if self.persist: self._log.save_operation(_push, new_element)
 
     def pop(self):
         """ Removes and returns the last element in the list.
@@ -148,7 +152,7 @@ class List():
 
         """
         value = self._inner_list.pop()
-        self._log.save_operation(_pop)
+        if self.persist: self._log.save_operation(_pop)
         return value
 
     def __iter__(self):
@@ -162,9 +166,6 @@ class List():
     def __contains__(self, element):
         """ Returns true iff the input element is in the list. """
         return element in self._inner_list
-
-    # TODO: addition operator:
-    # https://docs.python.org/3/reference/datamodel.html?emulating-container-types#emulating-container-types
 
     def _get_compaction_callback(self):
         def callback():
