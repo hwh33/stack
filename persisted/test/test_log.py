@@ -19,7 +19,7 @@ class DummyOperation():
         # Give the dummy operation a random string for a name.
         self.name = ''.join(
             random.choice(string.ascii_lowercase) for _ in range(10))
-        # Include in our parameters on of every type encodable as JSON.
+        # Include in our parameters one of every type encodable as JSON.
         # See: https://docs.python.org/3/library/json.html#py-to-json-table
         self.parameters = [
             "dummy string",
@@ -187,3 +187,19 @@ class TestLog(unittest.TestCase):
             current_size = os.stat(log._backing_file).st_size
             assert current_size < threshold
             assert current_size > 0
+
+    def test_compact_threshold_increase(self):
+        " Tests that the compaction threshold is increased when necessary. "
+        operation_name = "op_name"
+        elements = []
+        backing_file = tempfile.NamedTemporaryFile()
+        compaction_callback = lambda: [(operation_name, i) for i in elements]
+        log = Log(backing_file.name, compaction_callback)
+        # Set the threshold to be 1 KB so we don't have to add quite so many
+        # elements.
+        log._compaction_threshold = 1024
+        original_threshold = log._compaction_threshold
+        for i in range(0, 100):
+            elements.append(i)
+            log.save_operation(operation_name, i)
+        assert log._compaction_threshold > original_threshold
