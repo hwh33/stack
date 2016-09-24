@@ -97,6 +97,34 @@ class TestLog(unittest.TestCase):
             return
         raise Exception("Init call on corrupted file should have failed")
 
+    def test_init_bad_permissions(self):
+        """ Tests initialization from a file without read/write permissions. """
+        backing_file = tempfile.NamedTemporaryFile()
+        # Give the file no permissions whatsoever.
+        os.chmod(backing_file.name, 0000)
+        try:
+            Log(backing_file.name, dummy_compaction_callback)
+            self.fail("Init method should have failed for unreadable file")
+        except:
+            # This is what we want to happen.
+            pass
+        # Now make the file exclusively readable.
+        os.chmod(backing_file.name, 0400)
+        try:
+            Log(backing_file.name, dummy_compaction_callback)
+            self.fail("Init method should have failed for non-writable file")
+        except:
+            # This is what we want to happen.
+            pass
+        # Now make the file exclusively writable.
+        os.chmod(backing_file.name, 0200)
+        try:
+            Log(backing_file.name, dummy_compaction_callback)
+            self.fail("Init method should have failed for unreadable file")
+        except:
+            # This is what we want to happen.
+            pass
+
     def test_save_and_replay(self):
         " Tests that operations are saved in the log and can be replayed. "
         # Get a fresh log from the test_init_new method.
