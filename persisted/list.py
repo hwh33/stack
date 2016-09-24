@@ -54,6 +54,7 @@ class List():
             TODO: something if not JSON encodable
 
         """
+        test_json_encoding(new_element)
         self._inner_list.append(new_element)
         if self.persist: self._log.save_operation(_append, new_element)
 
@@ -83,6 +84,7 @@ class List():
                 If the index is not in the range [0, len(list)).
             TODO: something if not JSON encodable
         """
+        test_json_encoding(element)
         self._inner_list[index] = element
         if self.persist: self._log.save_operation(_set, index, element)
 
@@ -139,6 +141,7 @@ class List():
             something if not JSON encodable
 
         """
+        test_json_encoding(new_element)
         self._inner_list = [new_element] + self._inner_list
         if self.persist: self._log.save_operation(_push, new_element)
 
