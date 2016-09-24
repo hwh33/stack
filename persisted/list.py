@@ -1,4 +1,4 @@
-from log import Log
+from log import Log, test_json_encoding
 
 # Keys for the operations map.
 _append = "append"
@@ -13,8 +13,6 @@ class List():
 
     Any call which updates the state of the map will result in an update to the
     backing file with which the map was initialized.
-
-    TODO: check items for JSON-encodability before mutations.
 
     """
 
