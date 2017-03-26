@@ -8,23 +8,23 @@ _remove = "remove"
 _push = "push"
 _pop = "pop"
 
-class List():
+class List(object):
     """ A persisted list.
 
-    Any call which updates the state of the map will result in an update to the
-    backing file with which the map was initialized.
+    Any call which updates the state of the list will result in an update to the
+    backing file with which the list was initialized.
 
     """
 
     def __init__(self, path_to_backing_file):
-        """ Initializes the map using the provided file.
+        """ Initializes the list using the provided file.
 
         Args:
             path_to_backing_file (string):
                 The file at this path will be used to record the state of the
-                map. If no file currently exists at this location, one will be
+                list. If no file currently exists at this location, one will be
                 created. Otherwise, the file will be used to initialize the
-                state of this map.
+                state of this list.
 
         """
         self._log = Log(path_to_backing_file, self._get_compaction_callback())
@@ -158,6 +158,44 @@ class List():
         if self.persist: self._log.save_operation(_pop)
         return value
 
+    def __eq__(self, other):
+        """ Equality check. Returns NotImplemented for subclasses.
+
+        Args:
+            other (List)
+                Another list to run an equality check against.
+
+        Returns:
+            lists_equal (bool)
+                True iff the input list is equal to this one. Returns
+                NotImplemented if the input list is a subclass of List.
+
+        """
+        if type(other) != type(self):
+            if isinstance(other, List):
+                return NotImplemented
+            return False
+        return self._inner_list == other._inner_list
+
+    def __ne__(self, other):
+        """ Inequality check. Returns NotImplemented for subclasses.
+
+        Args:
+            other (List)
+                Another list to run an inequality check against.
+
+        Returns:
+            lists_equal (bool)
+                True iff the input list is not equal to this one. Returns
+                NotImplemented if the input list is a subclass of List.
+
+        """
+        if type(other) != type(self):
+            if isinstance(other, List):
+                return NotImplemented
+            return True
+        return self._inner_list != other._inner_list
+
     def __iter__(self):
         """ Returns an iterator over the elements in the list. """
         return self._inner_list.__iter__()
@@ -172,7 +210,7 @@ class List():
 
     def _get_compaction_callback(self):
         def callback():
-            return [(_append, element) for element in self._inner_list]
+            return [(_append, [ element ]) for element in self._inner_list]
         return callback
 
     def _get_op_map(self):

@@ -4,7 +4,7 @@ from log import Log, test_json_encoding
 _set = "set"
 _delete = "delete"
 
-class Map():
+class Map(object):
     """ A persisted map.
 
     Any call which updates the state of the map will result in an update to the
@@ -97,6 +97,44 @@ class Map():
     def __contains__(self, key):
         """ Returns true iff the key is present in the map. """
         return key in self._inner_map
+
+    def __eq__(self, other):
+        """ Equality check. Returns NotImplemented for subclasses.
+
+        Args:
+            other (Map)
+                Another map to run an equality check against.
+
+        Returns:
+            maps_equal (bool)
+                True iff the input map is equal to this one. Returns
+                NotImplemented if the input map is a subclass of Map.
+
+        """
+        if not type(other) == type(self):
+            if isinstance(other, Map):
+                return NotImplemented
+            return False
+        return self._inner_map == other._inner_map
+
+    def __ne__(self, other):
+        """ Inequality check. Returns NotImplemented for subclasses.
+
+        Args:
+            other (Map)
+                Another map to run an inequality check against.
+
+        Returns:
+            map_equal (bool)
+                True iff the input map is not equal to this one. Returns
+                NotImplemented if the input map is a subclass of Map.
+
+        """
+        if not type(other) == type(self):
+            if isinstance(other, Map):
+                return NotImplemented
+            return True
+        return self._inner_map != other._inner_map
 
     def __iter__(self):
         """ Returns an iterator over the keys in the map. """
