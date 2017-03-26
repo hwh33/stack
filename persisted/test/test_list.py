@@ -20,10 +20,12 @@ class TestList(unittest.TestCase):
         existing_list.append("to be deleted")
         existing_list.append("boo")
         del existing_list[2]
-        newly_loaded_list = List(existing_list._log._backing_file)
-        assert len(newly_loaded_list) == len(existing_list)
-        for index in range(0, len(existing_list)):
-            assert newly_loaded_list[index] == existing_list[index]
+        # Re-load twice in case the log is saved differently after the first load.
+        for i in range(2):
+            newly_loaded_list = List(existing_list._log._backing_file)
+            assert len(newly_loaded_list) == len(existing_list)
+            for index in range(0, len(existing_list)):
+                assert newly_loaded_list[index] == existing_list[index]
 
     def test_init_corrupted(self):
         " Tests initialization of a list from a badly formatted file. "
@@ -153,6 +155,44 @@ class TestList(unittest.TestCase):
         except StopIteration:
             # This is what we expect to happen
             return
+
+    def test_eq(self):
+        " Tests the __eq__ method. "
+        test_list1 = List(tempfile.NamedTemporaryFile().name)
+        test_list2 = List(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_list1.push(i)
+            test_list2.push(i)
+        assert test_list1 == test_list2
+        assert not test_list1 == List(tempfile.NamedTemporaryFile().name)
+        # Equality check should fail for subclasses which do not implement
+        # __eq__ themselves.
+        class ListChild(List): pass
+        child = ListChild(tempfile.NamedTemporaryFile().name)
+        assert test_list1.__eq__(child) == NotImplemented
+        assert child.__eq__(test_list1) == NotImplemented
+        # Other types shouldn't pass equality checks.
+        assert not test_list1 == "some string"
+
+    def test_ne(self):
+        " Tests the __ne__ method. "
+        test_list1 = List(tempfile.NamedTemporaryFile().name)
+        test_list2 = List(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_list1.push(i)
+            test_list2.push(i)
+        assert not test_list1 != test_list2
+        assert test_list1 != List(tempfile.NamedTemporaryFile().name)
+        # Inequality check should fail for subclasses which do not implement
+        # __ne__ themselves.
+        class ListChild(List): pass
+        child = ListChild(tempfile.NamedTemporaryFile().name)
+        assert test_list1.__ne__(child) == NotImplemented
+        assert child.__ne__(test_list1) == NotImplemented
+        # Other types should pass inequality checks.
+        assert test_list1 != "some string"
 
     def test_reversed(self):
         " Tests the __reversed__ method. "
