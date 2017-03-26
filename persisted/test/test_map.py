@@ -21,12 +21,14 @@ class TestMap(unittest.TestCase):
         existing_map["list"] = [1,2,3]
         existing_map["to be deleted"] = 5
         del existing_map["to be deleted"]
-        newly_loaded_map = Map(existing_map._log._backing_file)
-        assert len(newly_loaded_map) == len(existing_map)
-        for key, value in existing_map.iteritems():
-            assert key in newly_loaded_map
-            assert newly_loaded_map[key] == value
-        return newly_loaded_map
+        # Re-load twice in case the log is saved differently after the first load.
+        for i in range(2):
+            newly_loaded_map = Map(existing_map._log._backing_file)
+            assert len(newly_loaded_map) == len(existing_map)
+            for key, value in existing_map.iteritems():
+                assert key in newly_loaded_map
+                assert newly_loaded_map[key] == value
+            return newly_loaded_map
 
     def test_init_corrupted(self):
         """ Tests initialization of a map from a badly formatted file. """
@@ -99,6 +101,44 @@ class TestMap(unittest.TestCase):
         assert test_map.__contains__("testKey1")
         assert not "someOtherKey" in test_map
         assert not test_map.__contains__("someOtherKey")
+
+    def test_eq(self):
+        " Tests the __eq__ method. "
+        test_map1 = Map(tempfile.NamedTemporaryFile().name)
+        test_map2 = Map(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_map1[i] = i * 10
+            test_map2[i] = i * 10
+        assert test_map1 == test_map2
+        assert not test_map1 == Map(tempfile.NamedTemporaryFile().name)
+        # Equality check should fail for subclasses which do not implement
+        # __ne__ themselves.
+        class MapChild(Map): pass
+        child = MapChild(tempfile.NamedTemporaryFile().name)
+        assert test_map1.__eq__(child) == NotImplemented
+        assert child.__eq__(test_map1) == NotImplemented
+        # Other types shouldn't pass equality checks.
+        assert not test_map1 == "some string"
+
+    def test_ne(self):
+        " Tests the __ne__ method. "
+        test_map1 = Map(tempfile.NamedTemporaryFile().name)
+        test_map2 = Map(tempfile.NamedTemporaryFile().name)
+        number_elements = 10
+        for i in range(number_elements):
+            test_map1[i] = i * 10
+            test_map2[i] = i * 10
+        assert not test_map1 != test_map2
+        assert test_map1 != Map(tempfile.NamedTemporaryFile().name)
+        # Inequality check should fail for subclasses which do not implement
+        # __ne__ themselves.
+        class MapChild(Map): pass
+        child = MapChild(tempfile.NamedTemporaryFile().name)
+        assert test_map1.__ne__(child) == NotImplemented
+        assert child.__ne__(test_map1) == NotImplemented
+        # Other types should pass inequality checks.
+        assert test_map1 != "some string"
 
     def test_iter(self):
         "Tests the __iter__ method. "

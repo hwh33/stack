@@ -21,7 +21,7 @@ def test_json_encoding(*objs):
     """
     for obj in objs: json.dumps(obj)
 
-class Log():
+class Log(object):
     """ A log to back data structures in the 'persisted' library. """
 
     def __init__(self, filepath, compaction_callback):
